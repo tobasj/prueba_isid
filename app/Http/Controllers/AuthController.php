@@ -13,7 +13,7 @@ class AuthController extends Controller
     {
         $data = $request->validated();
         return response()->json(
-            $registerUser->handle($data['name'], $data['email'], $data['password'], true),
+            $registerUser->handle($data['name'], $data['email'], $data['password'], $data['role'] ?? 'student', true),
             201
         );
     }
