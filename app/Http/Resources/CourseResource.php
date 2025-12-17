@@ -12,8 +12,8 @@ class CourseResource extends JsonResource
             'id' => $this->id,
             'title' => $this->title,
             'description' => $this->description,
-            'instructor' => $this->instructor,
-            'lessons' => '',
+            'instructor' => new UserResource($this->instructor),
+            'lessons' => LessonResource::collection($this->lessons),
             'average_rating' => round($this->comments_avg_rating ?? 0, 2),
             'ratings_count' => $this->comments_count ?? 0
         ];
