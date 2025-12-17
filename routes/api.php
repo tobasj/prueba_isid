@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\InstructorController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CourseController;
 
@@ -25,6 +26,10 @@ Route::middleware('auth:api')->group(function () {
         Route::prefix('{course}/favorite')->group(function () {
             Route::post('/', [FavoriteController::class, 'store']);
             Route::delete('/', [FavoriteController::class, 'destroy']);
+        });
+
+        Route::prefix('instructors')->group(function () {
+            Route::get('/', [InstructorController::class, 'index']);
         });
     });
 });
