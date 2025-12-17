@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\FavoriteController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CourseController;
 
@@ -19,6 +20,11 @@ Route::middleware('auth:api')->group(function () {
         Route::prefix('{course}/comments')->group(function () {
             Route::get('/', [CommentController::class, 'index']);
             Route::post('/', [CommentController::class, 'store']);
+        });
+
+        Route::prefix('{course}/favorite')->group(function () {
+            Route::post('/', [FavoriteController::class, 'store']);
+            Route::delete('/', [FavoriteController::class, 'destroy']);
         });
     });
 });
