@@ -20,4 +20,10 @@ class Comment extends Model
     {
         return $this->belongsTo(Course::class);
     }
+
+    private function calcRating(Course $course): void
+    {
+        $stats = $course->comments()->selectRaw('COALESCE(AVG(rating),0) as avg, COUNT(*) as count')->first();
+        $course->update(['average_rating' => round($stats->avg, 2), 'ratings_count' => $stats->count,]);
+    }
 }

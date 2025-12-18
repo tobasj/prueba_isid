@@ -9,7 +9,7 @@ class Course extends Model
 {
     use SoftDeletes;
     protected $table = 'courses';
-    protected $fillable = ['instructor_id','title','description'];
+    protected $fillable = ['instructor_id','title','description','average_rating','ratings_count'];
 
     public function instructor()
     {
