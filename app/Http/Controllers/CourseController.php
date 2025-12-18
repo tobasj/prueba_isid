@@ -170,7 +170,7 @@ class CourseController extends Controller
      *   @OA\Response(response=404, description="No encontrado")
      * )
      */
-    public function delete(Course $course)
+    public function destroy(Course $course)
     {
         $course->delete();
         return response()->noContent();

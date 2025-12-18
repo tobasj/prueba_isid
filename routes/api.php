@@ -12,11 +12,11 @@ Route::post('login', [AuthController::class, 'login']);
 
 Route::middleware('auth:api')->group(function () {
     Route::prefix('courses')->group(function () {
-        Route::get('courses', [CourseController::class, 'index']);
-        Route::post('courses', [CourseController::class, 'store']);
-        Route::get('courses/{course}', [CourseController::class, 'show']);
-        Route::put('courses/{course}', [CourseController::class, 'update']);
-        Route::delete('courses/{course}', [CourseController::class, 'destroy']);
+        Route::get('/', [CourseController::class, 'index']);
+        Route::post('/', [CourseController::class, 'store']);
+        Route::get('/{course}', [CourseController::class, 'show']);
+        Route::put('/{course}', [CourseController::class, 'update']);
+        Route::delete('/{course}', [CourseController::class, 'destroy']);
 
         Route::prefix('{course}/comments')->group(function () {
             Route::get('/', [CommentController::class, 'index']);
@@ -27,9 +27,8 @@ Route::middleware('auth:api')->group(function () {
             Route::post('/', [FavoriteController::class, 'store']);
             Route::delete('/', [FavoriteController::class, 'destroy']);
         });
-
-        Route::prefix('instructors')->group(function () {
-            Route::get('/', [InstructorController::class, 'index']);
-        });
+    });
+    Route::prefix('instructors')->group(function () {
+        Route::get('/', [InstructorController::class, 'index']);
     });
 });
