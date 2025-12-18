@@ -10,7 +10,7 @@ class CommentStoreRequest extends FormRequest
     {
         return [
             'text' => ['required','string'],
-            'rating' => ['required','numeric','min:1','max:5'],
+            'rating' => ['required','numeric','min:0','max:5'],
         ];
     }
 

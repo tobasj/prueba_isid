@@ -10,7 +10,7 @@ class CommentUpdateRequest extends FormRequest
     {
         return [
             'text' => ['sometimes','string'],
-            'rating' => ['sometimes','numeric','min:1','max:5'],
+            'rating' => ['sometimes','numeric','min:0','max:5'],
         ];
     }
 

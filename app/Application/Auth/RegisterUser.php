@@ -12,9 +12,9 @@ class RegisterUser
 
     }
 
-    public function handle(string $name, string $email, string $password, string $role,  bool $withToken = true): array
+    public function handle(string $name, string $email, string $password, string $role, bool $withToken = true): array
     {
-        $role_id = Role::where('slug', $role)->first() ?? null;
+        $role_id = Role::where('slug', $role)->first()->id ?? null;
         $user = User::create([
             'name' => $name,
             'email' => $email,
