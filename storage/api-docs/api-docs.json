@@ -370,7 +370,7 @@
                     "Courses"
                 ],
                 "summary": "Eliminar curso",
-                "operationId": "e9f3235f190343f09575cc387e206d29",
+                "operationId": "9419855e165089a432c2ebb75bfd74b4",
                 "parameters": [
                     {
                         "name": "course",

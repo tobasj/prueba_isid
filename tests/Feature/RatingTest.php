@@ -11,7 +11,7 @@ use Tests\TestCase;
 class RatingTest extends TestCase
 {
     use RefreshDatabase;
-    
+
     public function testRating(): void
     {
         $role = Role::where('slug', 'instructor')->firstOrCreate(
