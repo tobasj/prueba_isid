@@ -1,59 +1,100 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+## Plataforma de Cursos (API + Front Vue)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+API REST en Laravel con arquitectura hexagonal, OAuth2 (Laravel Passport, password grant), soft deletes, caché de rating por curso, documentación OpenAPI (l5-swagger) y un mini front Vue+Vite para probar.
 
-## About Laravel
+### Requisitos
+- PHP 8.3, Composer
+- Node 20, npm
+- MySQL 8
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+### Configuración
+1) Copia `.env.example` a `.env` y ajusta:
+```
+APP_URL=http://127.0.0.1:8000
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_DATABASE=tu_db
+DB_USERNAME=tu_usuario
+DB_PASSWORD=tu_password
+PASSPORT_PASSWORD_CLIENT_ID=...
+PASSPORT_PASSWORD_CLIENT_SECRET=...
+```
+2) Instala dependencias:
+```
+composer install
+npm install
+```
+3) Genera key y migra/seed:
+```
+php artisan key:generate
+php artisan migrate --seed
+```
+4) Passport password grant:
+```
+php artisan passport:client --password --name "API Password Client"
+```
+Rellena en `.env` los valores de `client_id` y `client_secret`.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### Ejecutar en local
+En dos terminales:
+```
+php artisan serve --host=127.0.0.1 --port=8000
+npm run dev
+```
+Abre `http://127.0.0.1:8000/` (Laravel sirve la vista que monta el front Vue; no abras directamente 5173).
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Arquitectura (hexagonal)
+- Domain: contratos (Ports) e interfaces.
+- Application: casos de uso (p.ej. `IssuePasswordToken`, `RegisterUser`).
+- Infrastructure: adaptadores (p.ej. `PassportTokenIssuer`).
+- Delivery: HTTP (controllers, requests, resources).
 
-## Learning Laravel
+### Autenticación
+- OAuth2 password grant via Passport.
+- Endpoints: `POST /api/register`, `POST /api/login`.
+- Roles seeded: `student`, `instructor`.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### Modelado y características
+- Cursos, lecciones, comentarios, favoritos.
+- Soft deletes en users, courses, lessons, comments, favorites.
+- Rating cache por curso (`average_rating`, `ratings_count`) recalculado vía `CommentObserver`.
+- Validaciones con Form Requests; reglas de password robustas; regla `InstructorRole` para validar instructor.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Front Vue (resources/js/App.vue)
+- Login/registro (elige rol).
+- Listado de cursos, marcar favoritos, añadir comentarios, crear curso (rol instructor) con lecciones.
+- Axios con `Authorization` bearer desde localStorage; base URL `http://127.0.0.1:8000`.
 
-## Laravel Sponsors
+### Documentación OpenAPI
+- Generar: `php artisan l5-swagger:generate`
+- Por defecto se expone en `public/docs` (revisa config `config/l5-swagger.php`).
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Tests
+```
+php artisan test
+```
+Tests de features: auth/cursos/comentarios/favoritos/rating y soft deletes.
 
-### Premium Partners
+### Despliegue (resumen)
+- Workflow GitHub Actions `.github/workflows/deploy.yml` (push a master) ejecuta tests, build y despliegue por SSH.
+- Variables/secretos: `SSH_HOST`, `SSH_USERNAME`, `SSH_PASSWORD` (o `SSH_KEY`), `ENV_FILE` o variables de APP/DB/PASSPORT/APP_KEY.
+- Si usas Docker, construye/pushea imagen (ver `Dockerfile`) y en el servidor haz `docker pull` + `docker run` con `--env-file`.
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### Docker (rápido)
+```
+docker build -t cursos-app .
+docker run --env-file .env -p 8000:8000 cursos-app
+```
 
-## Contributing
+### Rutas principales (API)
+- Auth: `POST /api/register`, `POST /api/login`
+- Cursos: `GET/POST /api/courses`, `GET/PUT/PATCH/DELETE /api/courses/{course}`
+- Lecciones: incluidas en payload de cursos
+- Comentarios: `GET/POST /api/courses/{course}/comments`, `PUT/PATCH/DELETE /api/courses/{course}/comments/{comment}`
+- Favoritos: `POST/DELETE /api/courses/{course}/favorite`
+- Instructores: `GET /api/instructors`
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Notas
+- Usa encabezado `Accept: application/json` en llamadas.
+- `APP_URL` debe incluir host/puerto reales para evitar redirecciones raras.
+- Después de cambiar `.env`, ejecuta `php artisan config:clear`.
