@@ -1,0 +1,61 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: actions/setup-php@v2
+        with:
+          php-version: 8.3
+          extensions: mbstring, dom, fileinfo, curl, json, xml, openssl, pdo_mysql, sqlite3, intl, gd, zip, bcmath, iconv, opcache, readline, redis, memcached, memcache, meminfo, xdebug
+          cache: 'composer'
+
+      - name: Install composer deps
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Install node deps
+        run: npm install
+
+      - name: test the app
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: :memory:
+        run: php artisan test
+
+      - name: Build Vite
+        run: npm run build
+
+      - name: Deploy the app
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.SSH_PORT }}
+        script: |
+          cd /home/prueba_isid
+          git pull origin master
+          cat > .env <<'EOF'
+${{ secrets.ENV_FILE }}
+EOF
+          composer install --no-interaction --prefer-dist
+          npm install
+          npm run build
+          php artisan migrate --force
+          php artisan db:seed --force
+          php artisan passport:install
+          php artisan l5-swagger:generate
+          php artisan route:cache
+          php artisan config:cache
+          php artisan view:cache
+
